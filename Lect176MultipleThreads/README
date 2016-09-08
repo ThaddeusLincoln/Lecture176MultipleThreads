@@ -1,0 +1,32 @@
+We can't guarantee the order or can't predict when each thread will run and when 
+it will be suspended so that the other thread can run because that's based on the 
+operating system and what it's doing. 
+
+Weird things happen when 2 or more threads access the same variable(s).
+
+The HEAP is the applications memory that all threads share; while every thread has a thread-stack 
+and the memory is only accessible to its own thread. Now, local variables are stored in the thread-stack, 
+meaning that each thread has its own copy of a local variable. In contrast the memory required to store 
+an object instance value is allocated on the HEAP, meaning that when multiple threads are working with 
+the same object they in fact share that object, they don't have their own copy, so when one thread 
+changes the value of one of the objects instance variables the other thread will see the new value 
+from that point forward. 
+
+Two threads that share a variable that is in the HEAP means that when thread-1 executes and changes 
+the value of "i", and then get suspended so that thread2 can execute thread, at that point thread-2 
+will the see the new value of "i" as it has been updated by thread-1, instead of seen the value 
+of "i" that it had when it was last suspended.
+
+NOTE : a thread could be suspended between steps of a for-loop: just before decrementing "i", 
+just before the condition, or just before printing out the value. But it could even be suspended 
+during the sysout, because it involves concatenation and IO... adding it up, 
+there're multiple points where the current thread could be suspended. So the only thing we know 
+for sure, is the value that "i" had at the point in time when it was printed. 
+
+When threads are interleavingg and accessing the same data that another thread is using, 
+this is called THREAD INTERFERENCE, also called RACE CONDITION which is the more common term, 
+for when 2 or mores threads are writing a share resource. It's important to note that there 
+wouldn't be a problem if both threads are "only reading" the shared resource problem, 
+problems will only arise then at least one other threads is writing or updating the resource.
+
+ 
