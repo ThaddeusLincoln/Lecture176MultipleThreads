@@ -29,4 +29,87 @@ for when 2 or mores threads are writing a share resource. It's important to note
 wouldn't be a problem if both threads are "only reading" the shared resource problem, 
 problems will only arise then at least one other threads is writing or updating the resource.
 
+
+Lecture 178 : SYNCHRONIZATION ==================================================================
+
+We could easily having no threads interface (Thread Race Condition) by not passing the same object to both threads. 
+Even if both objects are stored in the HEAP and shared (with everyone) but since thread-1 will only work 
+with object-1 and thread-2 with object-2 there wouldn't be any interference. 
+Even so the print out order could be arbitrary.
+
+Unfortunately this solution won't always work in real world applications, for instance, 
+let's imagine if the objects represent were bank accounts or employee records. 
+We can't provide each thread with different objects, it wouldn't make sense. 
+So every time a bank account or employee file is accessed and changed we have 
+to use the same object to maintain integrity of the data. How would we know what the bank balance 
+should be after several threads have changed it? In that case it could be several threads 
+waiting to change the bank balance at the same time, there could be a thread making an automatic deposit, 
+a schedule bill payment and the owner of the account doing some online banking... 
+so order to ensure the bank balance value we need to allow multiple threads to change it but, 
+we also need to prevent a RACE CONDITION or thread interference.
+
+Fortunately, Java provides us with the way to control when a thread can change a value in the heap, 
+the process of controlling when threads execute code and therefore when they can access the 
+HEAP is called SYNCHRONIZATION. We can synchronize methods and statement, and when a method 
+in synchronized only one thread can execute that at a time. So when a thread is executing the method 
+all other threads that want to call the method or any other synchronized method in that class will suspend 
+until the thread running the method exits. Only then another thread can run a synchronized method, 
+then another, etc... For instance if a class has 3 synchronize method, then only one of the methods can 
+ever run at a time and only on one thread. Now, since only one thread can execute a synchronized method 
+at a time threads can't interleave when running a synchronized method, preventing thread interference 
+or RACE CONDITION, within synchronized methods, but not outside of those methods. Implying that if the 
+same insane variables reference within a synchronized method are also references outside, 
+in code that multiple threads can run, then that particular code isn't synchronized, 
+and we may still seed RACE CONDITION or thread interference. 
+
+When working with threads we have to synchronize all areas where we think that interference can happen. 
+For making a method synchronized all we need to do is add the synchronized keyword, e.g:
+
+public synchronized void doCountDown(){...}, with the synchronized key word we will be 
+saying that we want all the method to run before another thread gets access to it. 
+
+NOTE : Unfortunately we can't synchronize constructors, which if we think about it wouldn't make 
+much sense, because only one thread can construc an instance and until the constructor has finished 
+executing the instances won't be available for other threads to use. But we do are allowed to 
+synchronize any other method. 
+
+
+Another way in which we can prevent RACE CONDITION or thread interference is to SYNCHRONIZE A 
+BLOCK OF CODE, or block of statements rather than an entire method. Every Java object has what's 
+called its INSTRINSIC LOCK, and we'll also see this referenced to as a MONITOR. 
+Hence we can synchronize a block of statements that work with an object by forcing thread to 
+ACQUIRE THE OBJECTS LOCK before they execute the statement block. Only one thread can hold the LOCK at a time, 
+so other threads that want the lock will be suspended until the running thread releases it.  
+Then, one and only one of the waiting threads can get the lock and continue executing. 
+
+IMPORTANT : primitive types do not have have INTRINSIC LOCKS. when creating synchronized block, 
+we must remember that local variables are stored in the thread STACK, and each THREAD will create 
+its own copy of the local variable, and each copy is an object that has its own lock. 
+So thread-1 gets the lock for its copy and continues executing, while thread-2 gets locked 
+for its copy and it continues executing as well.  When we want to synchronize using an object we 
+have to use an object that the threads will share so they're both competing for the same lock. 
+In consequence using local variables won't work.
+
+There's only one exception to the previous, and is when using a String variable, 
+and the reason for that is that string objects are reused in the JVM. That is to say, 
+that the JVM uses a String pool for allocation of String objects. We may say examples of local 
+String variables being used to synchronize code, samples in which it'll work but in ours doesn't. 
+As a general rule, we should not use local variables to synchronize. 
+
+NOTE : when using a local object variable the object references are stored in the thread STACK, 
+but the object values are stored on the HEAP. Since the threads will each create their own 
+copy of the object, so the object reference will then be different it won't be any interference 
+even if the object values are the same in the heap. Essentially the thread STACK will only ever 
+contain primitive values and references (also function references but that's another topic :D ). 
+
+Given that a local varible (like String color) doesn't work, it would actually make sense to 
+synchronize using the object itself that the threads share, i.e:
+
+synchronize(this){....}
+
+We can also synchronize static methods and we can also use static object. When we do that the lock 
+that's used is owned by the class object associated with the object's class.
+
+ 
+
  
